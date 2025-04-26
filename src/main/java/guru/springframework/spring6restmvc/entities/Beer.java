@@ -24,22 +24,30 @@ public class Beer {
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false)
+    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     private UUID id;
 
     @Version
     private Integer version;
 
-    @Column(length = 50)
+    @Column(name = "beer_name", length = 50)
     private String beerName;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private BeerStyle beerStyle;
 
-    @Column(length = 25)
+    @Column(length = 25, unique = true)
     private String upc;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
+
     private Integer quantityOnHand;
 
+    @CreationTimestamp
+    private LocalDateTime createdDate;
+
+    @UpdateTimestamp
+    private LocalDateTime updateDate;
 }
