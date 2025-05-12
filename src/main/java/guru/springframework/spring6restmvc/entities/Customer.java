@@ -14,25 +14,36 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "customer")
+@Table(name = "customer",
+        indexes = @Index(name = "idx_customer_name", columnList = "name"))
 public class Customer {
-
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(columnDefinition = "CHAR(36)", updatable = false, nullable = false)
+    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false)
     private UUID id;
 
     @Version
+    @Column(nullable = false)
     private Integer version;
 
     @Column(length = 50, nullable = false)
     private String name;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdDate;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private LocalDateTime updateDate;
+
+    @Column(length = 100)
+    private String email;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Builder.Default
+    private Boolean active = true;
 }

@@ -1,9 +1,12 @@
 package guru.springframework.spring6restmvc.repo;
 
 import guru.springframework.spring6restmvc.entities.Beer;
+import guru.springframework.spring6restmvc.model.BeerStyle;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BeerRepo extends JpaRepository<Beer, UUID> {
+    List<Beer> findAllByBeerStyle(BeerStyle beerStyle);
 }
