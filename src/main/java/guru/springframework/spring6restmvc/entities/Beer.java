@@ -2,62 +2,81 @@ package guru.springframework.spring6restmvc.entities;
 
 import guru.springframework.spring6restmvc.model.BeerStyle;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "beer")
+@AllArgsConstructor
 public class Beer {
+
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(length = 36, updatable = false, nullable = false)
+    @GeneratedValue(generator = "UUID")
+    @UuidGenerator
+    @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     @Version
-    @PositiveOrZero
     private Integer version;
 
-    @NotBlank(message = "Beer name cannot be blank")
-    @Size(min = 3, max = 50, message = "Beer name must be between 3 and 50 characters")
-    @Column(name = "beer_name", length = 50)
+    @NotNull
+    @NotBlank
+    @Size(max = 50)
+    @Column(length = 50)
     private String beerName;
 
-    @NotNull(message = "Beer style cannot be null")
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @NotNull
+    @JdbcTypeCode(value = SqlTypes.SMALLINT)
     private BeerStyle beerStyle;
 
-    @NotBlank(message = "UPC cannot be blank")
-    @Size(min = 6, max = 25, message = "UPC must be between 6 and 25 characters")
-    @Column(length = 25, unique = true)
+    @NotNull
+    @NotBlank
+    @Size(max = 255)
     private String upc;
-
-    @NotNull(message = "Price cannot be null")
-    @Positive(message = "Price must be positive")
-    @Digits(integer = 5, fraction = 2, message = "Price must have up to 5 integer and 2 fraction digits")
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @PositiveOrZero(message = "Quantity cannot be negative")
     private Integer quantityOnHand;
 
+    @NotNull
+    private BigDecimal price;
+
+    @OneToMany(mappedBy = "beer")
+    private Set<BeerOrderLine> beerOrderLines;
+
+    @ManyToMany
+    @JoinTable(name = "beer_category",
+            joinColumns = @JoinColumn(name = "beer_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @Builder.Default
+    private Set<Category> categories = new HashSet<>();
+
+    private void addCategory(Category category) {
+        this.categories.add(category);
+        category.getBeers().add(this);
+    }
+    private void removeCategory(Category category) {
+        this.categories.remove(category);
+        category.getBeers().remove(this);
+    }
+
     @CreationTimestamp
-    @PastOrPresent
     private LocalDateTime createdDate;
 
     @UpdateTimestamp
-    @PastOrPresent
     private LocalDateTime updateDate;
 }
