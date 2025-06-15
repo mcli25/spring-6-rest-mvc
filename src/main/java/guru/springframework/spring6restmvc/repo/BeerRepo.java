@@ -5,40 +5,38 @@ import guru.springframework.spring6restmvc.model.BeerStyle;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+@RepositoryRestResource(path = "beer", collectionResourceRel = "beer")
 public interface BeerRepo extends JpaRepository<Beer, UUID> {
-    List<Beer> findAllByBeerStyle(BeerStyle beerStyle);
 
-    List<Beer> findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle(String beerName, BeerStyle beerStyle);
+    Page<Beer> findByBeerStyle(@Param("beerStyle") BeerStyle beerStyle, Pageable pageable);
 
-    Optional<Beer> findByUpc(String upc);
+    Optional<Beer> findByUpc(@Param("upc") String upc);
 
-    List<Beer> findByPriceLessThan(BigDecimal price);
+    Page<Beer> findByPriceLessThan(@Param("price") BigDecimal price, Pageable pageable);
 
-    List<Beer> findByPriceBetween(BigDecimal min, BigDecimal max);
+    Page<Beer> findByBeerNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
+    Page<Beer> findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle(
+            @Param("beerName") String beerName,
+            @Param("beerStyle") BeerStyle beerStyle,
+            Pageable pageable);
 
-    List<Beer> findByQuantityOnHandGreaterThan(Integer quantityOnHand);
+    Page<Beer> findAllByBeerNameIsLikeIgnoreCase(
+            @Param("beerName") String beerName,
+            Pageable pageable);
 
-    Page<Beer> findAllByBeerStyle(BeerStyle beerStyle, Pageable pageable);
-    Page<Beer> findAllByBeerNameIsLikeIgnoreCase(String beerName, Pageable pageable);
-    Page<Beer> findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle(String beerName, BeerStyle beerStyle, Pageable pageable);
+    Page<Beer> findAllByBeerStyle(
+            @Param("beerStyle") BeerStyle beerStyle,
+            Pageable pageable);
 
-    @Query("SELECT b FROM Beer b WHERE b.beerName LIKE %:name% AND b.beerStyle = :style")
-    List<Beer> searchByNameAndStyle(@Param("name") String beerName, @Param("style") BeerStyle beerStyle);
+    @RestResource(path = "by-style-list")
+    List<Beer> findAllByBeerStyle(@Param("beerStyle") BeerStyle beerStyle);
 
-    @Query(value = "SELECT * FROM beer WHERE price < :price", nativeQuery = true)
-    List<Beer> findCheaperThan(@Param("price") BigDecimal price);
-
-    Long countByBeerStyle(BeerStyle beerStyle);
-
-    boolean existsByUpc(String upc);
-
-    void deleteByUpc(String upc);
 }
